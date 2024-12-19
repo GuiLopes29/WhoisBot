@@ -76,26 +76,35 @@ async def loop_verificacao():
             try:
                 status = await verificar_dominio(dominio)
                 if status:
-                    await channel.send(f"Status do domínio **{dominio}**: {status}")
+                    await channel.send(
+                        f"Status do domínio **{dominio}**: {status}"
+                    )
                 else:
-                    await channel.send(f"Não foi possível verificar o domínio **{dominio}**.")
+                    await channel.send(
+                        f"Não foi possível verificar o domínio **{dominio}**."
+                    )
             except discord.errors.HTTPException as e:
                 logger.error("Erro ao enviar mensagem para o Discord: %s", e)
                 if e.code == 50035:
-                    await channel.send(f"A resposta para {dominio} é muito longa para o Discord.")
+                    await channel.send(
+                        f"A resposta para {dominio} é muito longa para o Discord."
+                    )
                 else:
-                    await channel.send(f"Ocorreu um erro ao verificar {dominio}. Tente novamente mais tarde.")
-            except Exception as e:
-                logger.error("Erro inesperado no loop de verificação para %s: %s", dominio, e)
-                await channel.send(f"Ocorreu um erro ao verificar {dominio}. Contate um administrador.")
+                    await channel.send(
+                        f"Ocorreu um erro ao verificar {dominio}. Tente novamente mais tarde."
+                    )
+            except (discord.DiscordException, Exception) as e:
+                logger.error(
+                    "Erro inesperado no loop de verificação para %s: %s", dominio, e
+                )
+                await channel.send(
+                    f"Ocorreu um erro ao verificar {dominio}. Contate um administrador."
+                )
 
         await asyncio.sleep(60 * 60)
 
 @client.event
 async def on_ready():
-    """
-    Evento que é acionado quando o bot está pronto para uso.
-    """
     logger.info('%s está conectado ao Discord!', client.user)
     logger.info("Conectado ao canal: %s", client.get_channel(CHANNEL_ID))
     client.loop.create_task(loop_verificacao())
