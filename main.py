@@ -1,5 +1,5 @@
 """
-WhoisBot: Um bot do Discord para verificar a disponibilidade de domínios.
+Este módulo contém um bot do Discord que verifica o status de domínios usando WHOIS.
 """
 
 import os
@@ -55,10 +55,10 @@ async def verificar_dominio(dominio):
     except parser.PywhoisError:
         logger.info("Domínio %s não encontrado.", dominio)
         return "Disponível"
-    except (parser.WhoisException, parser.WhoisCommandException) as e:
+    except AttributeError as e:
         logger.error("Erro ao consultar WHOIS para %s: %s", dominio, e)
         return f"Erro: {e}"
-    except Exception as e:
+    except (ValueError, TypeError, RuntimeError) as e:
         logger.error("Erro ao consultar WHOIS para %s: %s", dominio, e)
         return f"Erro: {e}"
 
@@ -73,7 +73,7 @@ async def loop_verificacao():
         logger.error("Canal com ID %d não encontrado. Verifique o .env.", CHANNEL_ID)
         return
 
-    dominios = ["solutech.dev", "nandomain.dev"]
+    dominios = ["nandomain.dev"]
     while True:
         for dominio in dominios:
             try:
@@ -103,7 +103,7 @@ async def loop_verificacao():
                 await channel.send(
                     f"Ocorreu um erro ao verificar {dominio}. Contate um administrador."
                 )
-            except Exception as e:
+            except (ValueError, TypeError, RuntimeError) as e:
                 logger.error(
                     "Erro inesperado no loop de verificação para %s: %s", dominio, e
                 )
