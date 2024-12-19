@@ -1,15 +1,15 @@
+"""
+Este módulo contém um bot do Discord que verifica o status de domínios usando WHOIS.
+"""
+
 import os
 import sys
 import asyncio
 import logging
 
 import discord
-from whois import whois
+from whois import whois, parser
 from dotenv import load_dotenv
-
-"""
-WhoisBot: Um bot do Discord para verificar a disponibilidade de domínios.
-"""
 
 # Configurar o logger para gravar em um arquivo
 logging.basicConfig(
@@ -52,10 +52,13 @@ async def verificar_dominio(dominio):
         logger.info("Status do domínio %s: %s", dominio, status_str)
         return status_str
 
-    except whois.parser.PywhoisError:
+    except parser.PywhoisError:
         logger.info("Domínio %s não encontrado.", dominio)
         return "Disponível"
-    except Exception as e:
+    except AttributeError as e:
+        logger.error("Erro ao consultar WHOIS para %s: %s", dominio, e)
+        return f"Erro: {e}"
+    except (ValueError, TypeError, RuntimeError) as e:
         logger.error("Erro ao consultar WHOIS para %s: %s", dominio, e)
         return f"Erro: {e}"
 
@@ -70,7 +73,7 @@ async def loop_verificacao():
         logger.error("Canal com ID %d não encontrado. Verifique o .env.", CHANNEL_ID)
         return
 
-    dominios = ["solutech.dev", "nandomain.dev"]
+    dominios = ["nandomain.dev"]
     while True:
         for dominio in dominios:
             try:
@@ -93,7 +96,14 @@ async def loop_verificacao():
                     await channel.send(
                         f"Ocorreu um erro ao verificar {dominio}. Tente novamente mais tarde."
                     )
-            except (discord.DiscordException, Exception) as e:
+            except discord.DiscordException as e:
+                logger.error(
+                    "Erro inesperado no loop de verificação para %s: %s", dominio, e
+                )
+                await channel.send(
+                    f"Ocorreu um erro ao verificar {dominio}. Contate um administrador."
+                )
+            except (ValueError, TypeError, RuntimeError) as e:
                 logger.error(
                     "Erro inesperado no loop de verificação para %s: %s", dominio, e
                 )
@@ -105,6 +115,9 @@ async def loop_verificacao():
 
 @client.event
 async def on_ready():
+    """
+    Evento que é acionado quando o bot está pronto para uso.
+    """
     logger.info('%s está conectado ao Discord!', client.user)
     logger.info("Conectado ao canal: %s", client.get_channel(CHANNEL_ID))
     client.loop.create_task(loop_verificacao())
