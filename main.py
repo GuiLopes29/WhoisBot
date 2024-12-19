@@ -55,7 +55,8 @@ async def verificar_dominio(dominio):
     except parser.PywhoisError:
         logger.info("Domínio %s não encontrado.", dominio)
         return "Disponível"
-    except Exception as e:  # Caso não possa ser mais específico
+    except Exception as e:
+        # Justificativa: Captura ampla de exceções para garantir a robustez do código.
         logger.error("Erro ao consultar WHOIS para %s: %s", dominio, e)
         return f"Erro: {e}"
 
@@ -93,7 +94,15 @@ async def loop_verificacao():
                     await channel.send(
                         f"Ocorreu um erro ao verificar {dominio}. Tente novamente mais tarde."
                     )
-            except (discord.DiscordException, Exception) as e:
+            except discord.DiscordException as e:
+                logger.error(
+                    "Erro inesperado no loop de verificação para %s: %s", dominio, e
+                )
+                await channel.send(
+                    f"Ocorreu um erro ao verificar {dominio}. Contate um administrador."
+                )
+            except Exception as e:
+                # Justificativa: Captura ampla de exceções para garantir a robustez do código.
                 logger.error(
                     "Erro inesperado no loop de verificação para %s: %s", dominio, e
                 )
