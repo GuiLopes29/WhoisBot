@@ -1,3 +1,7 @@
+"""
+WhoisBot: Um bot do Discord para verificar a disponibilidade de domínios.
+"""
+
 import os
 import sys
 import asyncio
@@ -6,10 +10,6 @@ import logging
 import discord
 from whois import whois
 from dotenv import load_dotenv
-
-"""
-WhoisBot: Um bot do Discord para verificar a disponibilidade de domínios.
-"""
 
 # Configurar o logger para gravar em um arquivo
 logging.basicConfig(
@@ -93,7 +93,7 @@ async def loop_verificacao():
                     await channel.send(
                         f"Ocorreu um erro ao verificar {dominio}. Tente novamente mais tarde."
                     )
-            except (discord.DiscordException, Exception) as e:
+            except discord.DiscordException as e:
                 logger.error(
                     "Erro inesperado no loop de verificação para %s: %s", dominio, e
                 )
