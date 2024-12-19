@@ -16,8 +16,8 @@ Um bot do Discord para verificar a disponibilidade de domínios.
  1º Clone o repositório:
 
 ```sh
-    git clone https://github.com/GuiLopes29/WhoisBot.git
-    cd WhoisBot
+git clone https://github.com/GuiLopes29/WhoisBot.git
+cd WhoisBot
 ```
 
 <br>
@@ -25,8 +25,8 @@ Um bot do Discord para verificar a disponibilidade de domínios.
 2º Crie e ative um ambiente virtual:
 
 ```sh
-    python -m venv venv
-    source venv/bin/activate  # No Windows use `venv\Scripts\activate`
+python -m venv venv
+source venv/bin/activate  # No Windows use `venv\Scripts\activate`
 ```
 
 <br>
@@ -34,7 +34,7 @@ Um bot do Discord para verificar a disponibilidade de domínios.
 3º Instale as dependências:
 
 ```sh
-    pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 <br>
@@ -42,8 +42,8 @@ Um bot do Discord para verificar a disponibilidade de domínios.
 4º Configure o arquivo `.env` com seu token do Discord e ID do canal:
 
 ```env
-    DISCORD_TOKEN=seu-token-aqui
-    DISCORD_CHANNEL=seu-channel-id-aqui
+DISCORD_TOKEN=seu-token-aqui
+DISCORD_CHANNEL=seu-channel-id-aqui
 ```
 
 ## Uso
