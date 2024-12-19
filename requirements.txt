@@ -1,0 +1,6 @@
+discord-py==2.4.0
+python-dotenv==1.0.1
+python-whois==0.9.5
+whois==1.20240129.2
+pytest==7.0
+flake8==6.0
