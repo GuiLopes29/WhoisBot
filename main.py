@@ -55,8 +55,10 @@ async def verificar_dominio(dominio):
     except parser.PywhoisError:
         logger.info("Domínio %s não encontrado.", dominio)
         return "Disponível"
+    except (parser.WhoisException, parser.WhoisCommandException) as e:
+        logger.error("Erro ao consultar WHOIS para %s: %s", dominio, e)
+        return f"Erro: {e}"
     except Exception as e:
-        # Justificativa: Captura ampla de exceções para garantir a robustez do código.
         logger.error("Erro ao consultar WHOIS para %s: %s", dominio, e)
         return f"Erro: {e}"
 
@@ -102,7 +104,6 @@ async def loop_verificacao():
                     f"Ocorreu um erro ao verificar {dominio}. Contate um administrador."
                 )
             except Exception as e:
-                # Justificativa: Captura ampla de exceções para garantir a robustez do código.
                 logger.error(
                     "Erro inesperado no loop de verificação para %s: %s", dominio, e
                 )
@@ -114,6 +115,9 @@ async def loop_verificacao():
 
 @client.event
 async def on_ready():
+    """
+    Evento que é acionado quando o bot está pronto para uso.
+    """
     logger.info('%s está conectado ao Discord!', client.user)
     logger.info("Conectado ao canal: %s", client.get_channel(CHANNEL_ID))
     client.loop.create_task(loop_verificacao())
