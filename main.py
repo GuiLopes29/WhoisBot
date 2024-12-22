@@ -6,11 +6,11 @@ import os
 import sys
 import asyncio
 import logging
+from socket import timeout as socket_timeout
 
 import discord
 from whois import whois, parser
 from dotenv import load_dotenv
-from socket import timeout as socket_timeout
 
 # Configurar o logger para gravar em um arquivo e no console com codificação UTF-8
 logging.basicConfig(
@@ -62,9 +62,9 @@ async def verificar_dominio(dominio):
     except (ValueError, TypeError, RuntimeError, socket_timeout) as e:
         logger.error("Erro ao consultar WHOIS para %s: %s", dominio, e)
         return f"Erro: {e}"
-    except Exception as e:
-        logger.error("Erro inesperado ao consultar WHOIS para %s: %s", dominio, e)
-        return f"Erro: {e}"
+    except (ConnectionError, OSError) as e:
+        logger.error("Erro de conexão ao consultar WHOIS para %s: %s", dominio, e)
+        return f"Erro de conexão: {e}"
 
 async def loop_verificacao():
     """
@@ -117,12 +117,12 @@ async def loop_verificacao():
                     f"Ocorreu um erro ao verificar {dominio}. Contate um administrador."
                 )
                 await asyncio.sleep(60)
-            except Exception as e:
+            except (ConnectionError, OSError) as e:
                 logger.error(
-                    "Erro inesperado no loop de verificação para %s: %s", dominio, e
+                    "Erro de conexão no loop de verificação para %s: %s", dominio, e
                 )
                 await channel.send(
-                    f"Ocorreu um erro ao verificar {dominio}. Contate um administrador."
+                    f"Ocorreu um erro de conexão ao verificar {dominio}. Contate um administrador."
                 )
                 await asyncio.sleep(60)
 
