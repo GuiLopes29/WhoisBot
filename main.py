@@ -10,14 +10,15 @@ import logging
 import discord
 from whois import whois, parser
 from dotenv import load_dotenv
+from socket import timeout as socket_timeout
 
-# Configurar o logger para gravar em um arquivo
+# Configurar o logger para gravar em um arquivo e no console com codificação UTF-8
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s %(levelname)s %(message)s',
     handlers=[
-        logging.FileHandler("whois_bot.log"),
-        logging.StreamHandler()
+        logging.FileHandler("whois_bot.log", encoding='utf-8'),
+        logging.StreamHandler(sys.stdout)
     ]
 )
 logger = logging.getLogger(__name__)
@@ -58,8 +59,11 @@ async def verificar_dominio(dominio):
     except AttributeError as e:
         logger.error("Erro ao consultar WHOIS para %s: %s", dominio, e)
         return f"Erro: {e}"
-    except (ValueError, TypeError, RuntimeError) as e:
+    except (ValueError, TypeError, RuntimeError, socket_timeout) as e:
         logger.error("Erro ao consultar WHOIS para %s: %s", dominio, e)
+        return f"Erro: {e}"
+    except Exception as e:
+        logger.error("Erro inesperado ao consultar WHOIS para %s: %s", dominio, e)
         return f"Erro: {e}"
 
 async def loop_verificacao():
@@ -96,6 +100,7 @@ async def loop_verificacao():
                     await channel.send(
                         f"Ocorreu um erro ao verificar {dominio}. Tente novamente mais tarde."
                     )
+                await asyncio.sleep(60)
             except discord.DiscordException as e:
                 logger.error(
                     "Erro inesperado no loop de verificação para %s: %s", dominio, e
@@ -103,13 +108,23 @@ async def loop_verificacao():
                 await channel.send(
                     f"Ocorreu um erro ao verificar {dominio}. Contate um administrador."
                 )
-            except (ValueError, TypeError, RuntimeError) as e:
+                await asyncio.sleep(60)
+            except (ValueError, TypeError, RuntimeError, socket_timeout) as e:
                 logger.error(
                     "Erro inesperado no loop de verificação para %s: %s", dominio, e
                 )
                 await channel.send(
                     f"Ocorreu um erro ao verificar {dominio}. Contate um administrador."
                 )
+                await asyncio.sleep(60)
+            except Exception as e:
+                logger.error(
+                    "Erro inesperado no loop de verificação para %s: %s", dominio, e
+                )
+                await channel.send(
+                    f"Ocorreu um erro ao verificar {dominio}. Contate um administrador."
+                )
+                await asyncio.sleep(60)
 
         await asyncio.sleep(60 * 60)
 
