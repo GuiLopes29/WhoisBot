@@ -46,25 +46,33 @@ async def verificar_dominio(dominio):
         w = whois(dominio)
         if not w or not w.status:
             logger.info("Domínio %s disponível!", dominio)
-            return "Disponível"
+            return "✅ Disponível"
 
         # Limpar os links dos status
-        status_str = ", ".join([status.split(" ")[0] for status in w.status])
+        if isinstance(w.status, list):
+            status_str = ", ".join(
+                [status.split(" ")[0] for status in w.status if "http" not in status]
+            )
+        else:
+            status_str = w.status.split(" ")[0]
+
         logger.info("Status do domínio %s: %s", dominio, status_str)
-        return status_str
+        return f"❌ {status_str}"
 
     except parser.PywhoisError:
         logger.info("Domínio %s não encontrado.", dominio)
-        return "Disponível"
+        status = "✅ Disponível"
     except AttributeError as e:
         logger.error("Erro ao consultar WHOIS para %s: %s", dominio, e)
-        return f"Erro: {e}"
+        status = f"❌ Erro: {e}"
     except (ValueError, TypeError, RuntimeError, socket_timeout) as e:
         logger.error("Erro ao consultar WHOIS para %s: %s", dominio, e)
-        return f"Erro: {e}"
+        status = f"❌ Erro: {e}"
     except (ConnectionError, OSError) as e:
         logger.error("Erro de conexão ao consultar WHOIS para %s: %s", dominio, e)
-        return f"Erro de conexão: {e}"
+        status = "Erro de conexão"
+
+    return status
 
 async def loop_verificacao():
     """
@@ -78,18 +86,22 @@ async def loop_verificacao():
         return
 
     dominios = ["nandomain.dev"]
+    dominios = ["solutech.dev"]
     while True:
         for dominio in dominios:
             try:
                 status = await verificar_dominio(dominio)
-                if status:
+                if status == "Erro de conexão":
                     await channel.send(
-                        f"Status do domínio **{dominio}**: {status}"
+                        f"Erro de conexão ao verificar o domínio **{dominio}**. "
+                        "Tentando novamente em 1 minuto."
                     )
-                else:
-                    await channel.send(
-                        f"Não foi possível verificar o domínio **{dominio}**."
-                    )
+                    await asyncio.sleep(60)
+                    continue
+
+                await channel.send(
+                    f"Status do domínio **{dominio}**: {status}"
+                )
             except discord.errors.HTTPException as e:
                 logger.error("Erro ao enviar mensagem para o Discord: %s", e)
                 if e.code == 50035:
