@@ -44,7 +44,7 @@ DISCORD_TOKEN=your-token-here
 DISCORD_CHANNEL=your-channel-id-here
 ```
 
-## Uso
+## Usage
 
 To start the bot, run:
 
